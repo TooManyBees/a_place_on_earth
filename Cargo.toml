@@ -8,3 +8,7 @@ edition = "2018"
 
 [dependencies]
 rand = "0.7"
+reqwest = "0.9.22"
+oauthcli = "1.0"
+url = "1.7"
+dotenv = "0.15"
