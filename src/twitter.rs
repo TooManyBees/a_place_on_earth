@@ -1,8 +1,8 @@
-use std::error::Error;
-use std::fmt::{Display, Formatter};
-use std::collections::HashMap;
 use reqwest::{Client, StatusCode};
 use serde::Deserialize;
+use std::collections::HashMap;
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 
 struct Keys {
     consumer_key: String,
@@ -17,36 +17,31 @@ pub enum TwitterError {
     UpdateError(StatusCode, Vec<TwitterResponseError>),
 }
 
-
 impl Display for TwitterError {
     fn fmt(&self, formatter: &mut Formatter) -> std::fmt::Result {
         match self {
-            TwitterError::MissingEnvVars(vars) => {
-                write!(
-                    formatter,
-                    "Can't post to Twitter. Missing required env vars:\n  {}",
-                    vars.join("\n  ")
-                )
-            },
+            TwitterError::MissingEnvVars(vars) => write!(
+                formatter,
+                "Can't post to Twitter. Missing required env vars:\n  {}",
+                vars.join("\n  ")
+            ),
             TwitterError::UpdateError(status, errors) => {
-                let errors = errors.iter()
+                let errors = errors
+                    .iter()
                     .map(|e| format!("Code {}: \"{}\"", e.code, e.message))
                     .collect::<Vec<String>>()
                     .join("\n  ");
                 write!(
                     formatter,
                     "Can't post to Twitter. HTTP status {}:\n  {}",
-                    status,
-                    errors,
+                    status, errors,
                 )
             }
         }
     }
 }
 
-impl Error for TwitterError {
-
-}
+impl Error for TwitterError {}
 
 #[derive(Deserialize)]
 struct TwitterResponseErrors {
@@ -75,15 +70,15 @@ pub fn send(message: &str) -> Result<(), Box<dyn Error>> {
             "PLACE_ON_EARTH_ACCESS_TOKEN",
             "PLACE_ON_EARTH_SECRET_ACCESS_TOKEN",
         ]
-            .iter()
-            .filter_map(|&key| match std::env::var(key) {
-                Ok(s) if !s.is_empty() => Some((key, s)),
-                _ => {
-                    missing_env_vars.push(key);
-                    None
-                }
-            })
-            .collect();
+        .iter()
+        .filter_map(|&key| match std::env::var(key) {
+            Ok(s) if !s.is_empty() => Some((key, s)),
+            _ => {
+                missing_env_vars.push(key);
+                None
+            }
+        })
+        .collect();
 
         if !missing_env_vars.is_empty() {
             return Err(Box::new(TwitterError::MissingEnvVars(missing_env_vars)));
@@ -106,8 +101,8 @@ pub fn send(message: &str) -> Result<(), Box<dyn Error>> {
         keys.secret_key,
         oauthcli::SignatureMethod::HmacSha1,
     )
-        .token(keys.access_token, keys.secret_token)
-        .finish_for_twitter();
+    .token(keys.access_token, keys.secret_token)
+    .finish_for_twitter();
 
     let client = Client::new();
     let mut res = client

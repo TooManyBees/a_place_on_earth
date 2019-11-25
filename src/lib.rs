@@ -1,6 +1,6 @@
 extern crate rand;
-use rand::seq::SliceRandom;
 use chrono::{Datelike, Weekday};
+use rand::seq::SliceRandom;
 
 fn today() -> &'static str {
     match chrono::Local::today().weekday() {
@@ -23,17 +23,20 @@ fn random_declaration(join: bool) -> String {
         (None, "I think it's a day"),
     ];
     let mut rng = rand::thread_rng();
-    STATEMENTS.choose(&mut rng).map(|&pair| {
-        if join {
-            if let Some(s) = pair.0 {
-                format!("{} {}", s, pair.1)
+    STATEMENTS
+        .choose(&mut rng)
+        .map(|&pair| {
+            if join {
+                if let Some(s) = pair.0 {
+                    format!("{} {}", s, pair.1)
+                } else {
+                    pair.1.into()
+                }
             } else {
                 pair.1.into()
             }
-        } else {
-            pair.1.into()
-        }
-    }).unwrap()
+        })
+        .unwrap()
 }
 
 fn random_question() -> &'static str {
@@ -76,7 +79,10 @@ fn random_incidental() -> String {
         "Is it %D? Then",
     ];
     let mut rng = rand::thread_rng();
-    INCIDENTALS.choose(&mut rng).unwrap().replace("%D", &today())
+    INCIDENTALS
+        .choose(&mut rng)
+        .unwrap()
+        .replace("%D", &today())
 }
 
 fn random_answer(join: bool) -> String {
