@@ -1,6 +1,4 @@
-use reqwest::{Client, StatusCode};
-
-pub fn send(message: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn send(message: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     let access_token = std::env::var("PLACE_ON_EARTH_BOTSIN_SPACE_TOKEN")?;
 
     let request_url = {
@@ -11,12 +9,8 @@ pub fn send(message: &str) -> Result<(), Box<dyn std::error::Error>> {
         request_url.into_string().replace("+", "%20")
     };
 
-    let client = Client::new();
-    let res = client
-        .post(&request_url)
-        .header("Authorization", format!("Bearer {}", access_token))
-        .send()?;
-
-    dbg!(res);
+    let res = surf::post(&request_url)
+        .set_header("Authorization", format!("Bearer {}", access_token))
+        .await?;
     Ok(())
 }

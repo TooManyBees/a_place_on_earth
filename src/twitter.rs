@@ -1,8 +1,8 @@
-use reqwest::{Client, StatusCode};
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use surf::http::status::StatusCode;
 
 struct Keys {
     consumer_key: String,
@@ -53,7 +53,7 @@ pub struct TwitterResponseError {
     message: String,
 }
 
-pub fn send(message: &str) -> Result<(), Box<dyn Error>> {
+pub async fn send(message: &str) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     let request_url = {
         let mut request_url = url::Url::parse("https://api.twitter.com/1.1/statuses/update.json")?;
         request_url
@@ -81,7 +81,7 @@ pub fn send(message: &str) -> Result<(), Box<dyn Error>> {
         .collect();
 
         if !missing_env_vars.is_empty() {
-            return Err(Box::new(TwitterError::MissingEnvVars(missing_env_vars)));
+            Err(TwitterError::MissingEnvVars(missing_env_vars))?;
         }
 
         Keys {
@@ -104,16 +104,14 @@ pub fn send(message: &str) -> Result<(), Box<dyn Error>> {
     .token(keys.access_token, keys.secret_token)
     .finish_for_twitter();
 
-    let client = Client::new();
-    let mut res = client
-        .post(request_url.as_str())
-        .header("Authorization", header.to_string())
-        .send()?;
+    let mut res = surf::post(request_url)
+        .set_header("Authorization", header.to_string())
+        .await?;
+
     if res.status().is_success() {
-        dbg!(res);
         Ok(())
     } else {
-        let err: TwitterResponseErrors = res.json()?;
+        let err: TwitterResponseErrors = res.body_json().await?;
         Err(TwitterError::UpdateError(res.status(), err.errors))?
     }
 }
