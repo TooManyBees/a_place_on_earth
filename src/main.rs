@@ -15,6 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     request_url
         .query_pairs_mut()
         .append_pair("status", &message);
+    let request_url = url::Url::parse(&request_url.into_string().replace("+", "%20"))?;
 
     let keys = {
         dotenv::dotenv()?;
