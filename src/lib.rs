@@ -41,7 +41,8 @@ fn random_action() -> String {
     ];
     let mut rng = rand::thread_rng();
     let action = ACTIONS.choose(&mut rng).unwrap();
-    let song = SONGS.choose_weighted(&mut rng, |pair| pair.1)
+    let song = SONGS
+        .choose_weighted(&mut rng, |pair| pair.1)
         .map(|pair| pair.0)
         .unwrap();
     action.replace("%S", song)
@@ -66,53 +67,62 @@ fn random_answer(join: bool) -> String {
         (Some("it"), "sure feels like it."),
     ];
     let mut rng = rand::thread_rng();
-    ANSWERS.choose(&mut rng).map(|pair| if join {
-        if let Some(s) = pair.0 {
-            format!("{} {}", s, pair.1)
-        } else {
-            String::from(pair.1)
-        }
-    } else {
-        String::from(pair.1)
-    }).unwrap()
+    ANSWERS
+        .choose(&mut rng)
+        .map(|pair| {
+            if join {
+                if let Some(s) = pair.0 {
+                    format!("{} {}", s, pair.1)
+                } else {
+                    String::from(pair.1)
+                }
+            } else {
+                String::from(pair.1)
+            }
+        })
+        .unwrap()
 }
 
 fn capitalize(s: &str) -> String {
     let mut c = s.chars();
     match c.next() {
         None => String::new(),
-        Some(f) => f.to_ascii_uppercase().to_string() + c.as_str()
+        Some(f) => f.to_ascii_uppercase().to_string() + c.as_str(),
     }
 }
 
 const VARIANTS: &[fn() -> String] = &[
     || {
-        format!("It's {day}, so {declaration} {action}.",
-                day=DAY,
-                declaration=capitalize(random_declaration()),
-                action=random_action()
+        format!(
+            "It's {day}, so {declaration} {action}.",
+            day = DAY,
+            declaration = capitalize(random_declaration()),
+            action = random_action()
         )
     },
     || {
-        format!("{day}? {declaration} {action}.",
-                day=DAY,
-                declaration=capitalize(random_declaration()),
-                action=random_action()
+        format!(
+            "{day}? {declaration} {action}.",
+            day = DAY,
+            declaration = capitalize(random_declaration()),
+            action = random_action()
         )
     },
     || {
-        format!("{question} {action}? {answer}",
-                question=random_question(),
-                action=random_action(),
-                answer=capitalize(&random_answer(false))
+        format!(
+            "{question} {action}? {answer}",
+            question = random_question(),
+            action = random_action(),
+            answer = capitalize(&random_answer(false))
         )
     },
     || {
-        format!("{question} {action}? {incidental} {answer}",
-                question=random_question(),
-                action=random_action(),
-                incidental=random_incidental(),
-                answer=random_answer(true)
+        format!(
+            "{question} {action}? {incidental} {answer}",
+            question = random_question(),
+            action = random_action(),
+            incidental = random_incidental(),
+            answer = random_answer(true)
         )
     },
 ];
